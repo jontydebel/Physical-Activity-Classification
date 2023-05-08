@@ -12,17 +12,14 @@ FILE(GLOB app_sources src/*.c)
 
 set(repo ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(oslib ${repo}/oslib/)
-# set(ahushell ${oslib}/ahu_drivers/ahu_shell/)
 set(ahuhci ${oslib}/ahu_drivers/ahu_hci/)
 set(sensor ${oslib}/scu_drivers/scu_sensors/)
 
 
-target_include_directories(app PRIVATE ${prac1} ${oslib} ${ahushell} ${ahuhci} ${sensor})
+target_include_directories(app PRIVATE ${prac1} ${oslib} ${ahuhci} ${sensor})
 
 include_directories(${oslib} ${ahushell} ${ahuhci})
 
-# target_sources(app PRIVATE ${ahushell}/ahu_shell_cmds.c)
-# target_sources(app PRIVATE ${ahuhci}/ahu_hci.c)
 target_sources(app PRIVATE ${sensor}/t52_mpu6050.c)
 target_sources(app PRIVATE ${ahuhci}/bt.c)
 target_sources(app PRIVATE ${app_sources})
