@@ -8,6 +8,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
 #include <stdio.h>
+#include "t52_mpu6050.h"
 
 static const char *now_str(void)
 {
@@ -30,7 +31,7 @@ static const char *now_str(void)
 	return buf;
 }
 
-static int process_mpu6050(const struct device *dev)
+int process_mpu6050(const struct device *dev)
 {
 	struct sensor_value temperature;
 	struct sensor_value accel[3];
@@ -84,13 +85,13 @@ static void handle_mpu6050_drdy(const struct device *dev,
 }
 #endif /* CONFIG_MPU6050_TRIGGER */
 
-void main(void)
+void init_mpu6050(const struct device *mpu6050)
 {
-	const char *const label = DT_LABEL(DT_INST(0, invensense_mpu6050));
-	const struct device *mpu6050 = device_get_binding(label);
+	// const char *const label = DT_LABEL(DT_INST(0, invensense_mpu6050));
+	// const struct device *mpu6050 = device_get_binding(label);
 
 	if (!mpu6050) {
-		printf("Failed to find sensor %s\n", label);
+		printf("Failed to find MPU sensor\n");
 		return;
 	}
 
@@ -106,16 +107,16 @@ void main(void)
 	}
 	printk("Configured for triggered sampling.\n");
 #endif
-	printk("Processing STARTING:\n");
-	while (!IS_ENABLED(CONFIG_MPU6050_TRIGGER)) {
-		printk("Processing now.\n");
-		int rc = process_mpu6050(mpu6050);
+	// printk("Processing STARTING:\n");
+	// while (!IS_ENABLED(CONFIG_MPU6050_TRIGGER)) {
+	// 	printk("Processing now.\n");
+	// 	int rc = process_mpu6050(mpu6050);
 
-		if (rc != 0) {
-			break;
-		}
-		k_sleep(K_SECONDS(2));
-	}
+	// 	if (rc != 0) {
+	// 		break;
+	// 	}
+	// 	k_sleep(K_SECONDS(2));
+	// }
 
 	/* triggered runs with its own thread after exit */
 }
