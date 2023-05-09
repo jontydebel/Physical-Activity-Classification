@@ -1,0 +1,4 @@
+nrfutil pkg generate --hw-version 52 --sd-req=0x00 \
+        --application build/zephyr/zephyr.hex \
+        --application-version 1 blinky.zip
+nrfutil dfu usb-serial -pkg blinky.zip -p /dev/ttyACM0
