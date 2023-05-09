@@ -22,7 +22,7 @@ struct __attribute__((__packed__)) BT_Message {
 	float accelX;
 	float accelY;
 	float accelZ;
-	float gyroX;
+	// float gyroX;
 	// float gyroY;
 	// float gyroZ;
 	// struct sensor_values sensorReadings;
