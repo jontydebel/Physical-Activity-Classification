@@ -31,7 +31,9 @@ static const char *now_str(void)
 	return buf;
 }
 
-int process_mpu6050(const struct device *dev)
+int process_mpu6050(const struct device *dev, struct sensor_value *accel_x, struct sensor_value *accel_y,
+					struct sensor_value *accel_z, struct sensor_value *gyro_x, struct sensor_value *gyro_y, 
+					struct sensor_value *gyro_z)
 {
 	struct sensor_value temperature;
 	struct sensor_value accel[3];
@@ -50,18 +52,28 @@ int process_mpu6050(const struct device *dev)
 		rc = sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP,
 					&temperature);
 	}
+
+	*accel_x = accel[0];
+	*accel_y = accel[1];
+	*accel_z = accel[2];
+
+	*gyro_x = gyro[0];
+	*gyro_y = gyro[1];
+	*gyro_z = gyro[2];
+
+
 	if (rc == 0) {
-		printf("[%s]:%g Cel\n"
-		       "  accel %f %f %f m/s/s\n"
-		       "  gyro  %f %f %f rad/s\n",
-		       now_str(),
-		       sensor_value_to_double(&temperature),
-		       sensor_value_to_double(&accel[0]),
-		       sensor_value_to_double(&accel[1]),
-		       sensor_value_to_double(&accel[2]),
-		       sensor_value_to_double(&gyro[0]),
-		       sensor_value_to_double(&gyro[1]),
-		       sensor_value_to_double(&gyro[2]));
+		// printf("[%s]:%g Cel\n"
+		//        "  accel %f %f %f m/s/s\n"
+		//        "  gyro  %f %f %f rad/s\n",
+		//        now_str(),
+		//        sensor_value_to_double(&temperature),
+		//        sensor_value_to_double(&accel[0]),
+		//        sensor_value_to_double(&accel[1]),
+		//        sensor_value_to_double(&accel[2]),
+		//        sensor_value_to_double(&gyro[0]),
+		//        sensor_value_to_double(&gyro[1]),
+		//        sensor_value_to_double(&gyro[2]));
 	} else {
 		printf("sample fetch/get failed: %d\n", rc);
 	}

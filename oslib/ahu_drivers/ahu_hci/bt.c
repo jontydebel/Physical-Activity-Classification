@@ -39,19 +39,19 @@ static struct bt_conn *default_conn;
 static struct bt_uuid_16 uuid = BT_UUID_INIT_16(0);
 static struct bt_gatt_discover_params discover_params;
 
-/* packet that holds all data from bt messages */
-static struct BT_Message *bt_recv_packet = &(struct BT_Message) {
-	.preamble = 0,
-	.type = 0x02,
-	.length = 0,
-	.data = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	.did = 0
-};
+// /* packet that holds all data from bt messages */
+// static struct BT_Message *bt_recv_packet = &(struct BT_Message) {
+// 	.preamble = 0,
+// 	.type = 0x02,
+// 	.length = 0,
+// 	.data = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+// 	.did = 0
+// };
 
 //Semaphores and msgq used for sending and receiving data
 K_SEM_DEFINE(bt_recv_sem, 0, 1);
-K_SEM_DEFINE(bt_send_sem, 1, 1);
-K_MSGQ_DEFINE(bt_queue, sizeof(struct BT_Message), 10, 4);
+K_SEM_DEFINE(bt_send_sem, 1, 2);
+// K_MSGQ_DEFINE(bt_queue, sizeof(struct BT_Message), 10, 4);
 
 /**
  * @brief Return the blu_handle UUID
@@ -91,7 +91,7 @@ static void blu_send_cb(struct bt_conn *conn, uint8_t err,
  * @param handle handler pointing to the blu handle
  * @param packet pointer to struct that contains data to be sent.
  */
-void blu_send(uint16_t handle, struct BT_Node_Message *packet)
+void blu_send(uint16_t handle, struct BT_Message *packet)
 {	
 	static struct bt_gatt_write_params write_params;
 	int err;
@@ -265,15 +265,15 @@ static struct bt_conn_auth_cb auth_cb_display = {
 static ssize_t recv_from_blu(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf,
 			    uint16_t len, uint16_t err, uint8_t flags) {
 
-	// Copy the data received over to the receive packet.
-	memcpy(bt_recv_packet, buf, len);
+	// // Copy the data received over to the receive packet.
+	// memcpy(bt_recv_packet, buf, len);
 
-	//Send packet to the bt processing thread.
-	if (k_msgq_put(&bt_queue, bt_recv_packet, K_NO_WAIT) != 0) {
-		//Msg buffer is full, silently ignore
-	}
-	//Give semaphore to bt processing thread, so it can access the message
-	k_sem_give(&bt_recv_sem);
+	// //Send packet to the bt processing thread.
+	// if (k_msgq_put(&bt_queue, bt_recv_packet, K_NO_WAIT) != 0) {
+	// 	//Msg buffer is full, silently ignore
+	// }
+	// //Give semaphore to bt processing thread, so it can access the message
+	// k_sem_give(&bt_recv_sem);
 	return len;
 }
 
@@ -299,111 +299,4 @@ void bt_init(void) {
 	//Start advertising and connect to correct device.
 	bt_ready();
 	bt_conn_auth_cb_register(&auth_cb_display);
-}
-
-/**
- * @brief Find the devices with specified MAC address.
- */
-
-/**
- * @brief Base Zephyr function that calls when a device is found over BT
- * 		  Parses and finds the devices with specified MAC address'.
- * 
- * @param addr address
- * @param rssi RSSI value of device
- * @param type Device type - ignored in this case.
- * @param ad Simple network buffer representation
- */
-static void device_found(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
-			 struct net_buf_simple *ad)
-{
-	
-	//Initialise node packet with basic info
-	struct BT_Node_Message bt_node_packet;
-	bt_node_packet.preamble = 0xAA;
-	bt_node_packet.type = 0x02;
-	//Initialise other variables.
-	int8_t rssiVal[MAX_NODES];	//Struct containing rssi values to be sent to BSU
-	char addr_str[BT_ADDR_LE_STR_LEN]; //Address of the found device
-
-	//Get address of found device.
-	bt_addr_le_to_str(addr, addr_str, sizeof(addr_str));
-	
-	//Initialise array of addresses wanted
-	const char *address_string[MAX_NODES]; //Struct containing the address of all nodes
-	//Base Nodes Used. In order from A-H
-	address_string[0] = "F5:75:FE:85:34:67";
-	address_string[1] = "E5:73:87:06:1E:86";
-	address_string[2] = "CA:99:9E:FD:98:B1";
-	address_string[3] = "CB:1B:89:82:FF:FE";
-	address_string[4] = "D4:D2:A0:A4:5C:AC";
-	address_string[5] = "C1:13:27:E9:B7:7C";
-	address_string[6] = "F1:04:48:06:39:A0";
-	address_string[7] = "CA:0C:E0:DB:CE:60";
-	//Additional Nodes from I-L
-	address_string[8] = "D4:7F:D4:7C:20:13";
-	address_string[9] = "F7:0B:21:F1:C8:E1";
-	address_string[10] = "FD:E0:8D:FA:3E:4A";
-	address_string[11] = "EE:32:F7:28:FA:AC";
-
-	int i = 0;
-	//Loop through all defined address's and look for match
-	for (i = 0; i < MAX_NODES; ++i) {
-
-		if (strstr(addr_str, address_string[i])) { 
-			rssiVal[i] = rssi;
-			// printk("Device found: %s (RSSI %d)\n", addr_str, rssi);
-			// printk("GOOD DEVICE FOUND :) Device %i found (RSSI %d)\n", i, rssi);
-		} else {
-			// fprintf(f, "NULL,NULL\n", address_string[i], rssi);
-			// printk("NOT DEVICE :(\n");
-		}
-
-		//Get the time since last send in ticks
-		timeCurr = k_cycle_get_32();
-      	duration = timeCurr - timePrev;
-      	//Convert duration to uS
-     	duration = k_cyc_to_us_near32(duration);
-		//Check if more than 200ms have passed (in uS)
-		if (duration > 200000) {
-			//Update timePrev (ticks)
-			timePrev = k_cycle_get_32();
-			// Send to BSU
-			// Wait for semaphore to be given before sending bluetooth message.
-			if (!k_sem_take(&bt_send_sem, K_MSEC(100))) {
-				printk("Sending to bsu\n");
-				//Assign rssi vals to BT packet
-				memcpy(bt_node_packet.rssiVals, rssiVal, sizeof(bt_node_packet.rssiVals));
-				bt_node_packet.length = sizeof(bt_node_packet.rssiVals);
-
-				//Send packet over bluetooth
-				blu_send(get_blu_handle(), &bt_node_packet);
-			}
-		}
-	}
-	
-}
-
-/**
- * @brief Initialises and starts device's node scanning.
- * Searches for specific nodes and retrieves their RSSI value
- */
-void bt_init_node_scan(void) {
-	struct bt_le_scan_param scan_param = {
-		.type       = BT_LE_SCAN_TYPE_PASSIVE,
-		.options    = BT_LE_SCAN_OPT_FILTER_DUPLICATE,
-		.interval   = BT_GAP_SCAN_FAST_INTERVAL,
-		.window     = BT_GAP_SCAN_FAST_WINDOW,
-	};
-	int err;
-
-	printk("Starting Observer\n");
-
-	//Start scanning for nodes and retrieve their RSSI values
-	err = bt_le_scan_start(&scan_param, device_found);
-	printk("\n");
-	if (err) {
-		printk("Starting scanning failed (err %d)\n", err);
-		return;
-	}
 }
