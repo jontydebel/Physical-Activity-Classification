@@ -140,9 +140,9 @@ void ahu_sensor_thread(void)
 				bt_sensor_packet.accelX = sensor_value_to_double(&accel_x);
                 bt_sensor_packet.accelY = sensor_value_to_double(&accel_y);
                 bt_sensor_packet.accelZ = sensor_value_to_double(&accel_z);
-                // bt_sensor_packet.gyroX = sensor_value_to_double(&gyro_x);
-                // bt_sensor_packet.gyroY = sensor_value_to_double(&gyro_y);
-                // bt_sensor_packet.gyroZ = sensor_value_to_double(&gyro_z);
+                bt_sensor_packet.gyroX = sensor_value_to_double(&gyro_x);
+                bt_sensor_packet.gyroY = sensor_value_to_double(&gyro_y);
+                bt_sensor_packet.gyroZ = sensor_value_to_double(&gyro_z);
                 // memcpy(bt_sensor_packet.accelY, sensor_value_to_double(&accel_y), sizeof(float));
                 // memcpy(bt_sensor_packet.accelZ, sensor_value_to_double(&accel_z), sizeof(float));
                 // memcpy(bt_sensor_packet.gyroX, sensor_value_to_double(&gyro_x), sizeof(float));

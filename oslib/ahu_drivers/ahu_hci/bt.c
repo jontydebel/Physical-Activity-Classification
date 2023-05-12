@@ -114,6 +114,29 @@ void blu_send(uint16_t handle, struct BT_Message *packet)
 	}
 }
 
+struct bt_gatt_exchange_params exchange_params;
+
+static void exchange_func(struct bt_conn *conn, uint8_t att_err,
+			  struct bt_gatt_exchange_params *params)
+{
+	struct bt_conn_info info = {0};
+	int err;
+
+	printk("MTU exchange %s\n", att_err == 0 ? "successful" : "failed");
+	printk("MTU size is: %d\n", bt_gatt_get_mtu(conn));
+
+	err = bt_conn_get_info(conn, &info);
+	if (err) {
+		printk("Failed to get connection info %d\n", err);
+		return;
+	}
+
+	// if (info.role == BT_CONN_ROLE_MASTER) {
+	// 	instruction_print();
+	// 	test_ready = true;
+	// }
+}
+
 /**
  * @brief Default discover_func, retrieves GATT characteristics
  */
@@ -153,8 +176,17 @@ static uint8_t discover_func(struct bt_conn *conn,
 			printk("Found blu chrc\n");
 			blu_handle = chrc->value_handle;
 		} 
-	}
 
+		exchange_params.func = exchange_func;
+		printk("MTU size is: %d\n", bt_gatt_get_mtu(default_conn));
+		err = bt_gatt_exchange_mtu(default_conn, &exchange_params);
+		if (err) {
+			printk("MTU exchange failed (err %d)\n", err);
+		} else {
+			printk("MTU exchange pending\n");
+		}
+	}
+	
 	return BT_GATT_ITER_STOP;
 }
 
@@ -186,6 +218,7 @@ static void connected(struct bt_conn *conn, uint8_t err)
 		discover_params.start_handle = BT_ATT_FIRST_ATTRIBUTE_HANDLE;
 		discover_params.end_handle = BT_ATT_LAST_ATTRIBUTE_HANDLE;
 		discover_params.type = BT_GATT_DISCOVER_PRIMARY;
+		
 		//Call gatt_discover to retrieve all characteristics
 		err = bt_gatt_discover(default_conn, &discover_params);
 		if (err != 0)
