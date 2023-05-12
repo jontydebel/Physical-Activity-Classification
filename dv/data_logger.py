@@ -7,11 +7,14 @@ import pandas as pd
 
 
 def main():
-    file = open("raw_data.txt", 'w+')
-    while time.process_time() < 1:
+    file = open("data/walking_fast_3.txt", 'w+')
+    start = time.time()
+    while time.time() - start < 30:
+        # print(time.process_time())
         data_line = serial_readline()
-        if data_line is not None:
-            file.writelines(str(list(data_line.values()))[1:-1])
+        if data_line is not None and len(data_line) > 5:
+            # print(data_line)
+            file.write(f"{data_line}\n")
     file.close()
 
 
@@ -26,10 +29,12 @@ def serial_readline():
     try:
         dataline = strip_ansi(dataline)
         dataline = dataline.replace("CSSE4011:~$", "")
-        dataline = dataline[dataline.find("{"):]
-        dataline_json = json.loads(dataline)
 
-        return dataline_json
+        dataline = dataline[dataline.find("Datais"):]
+        dataline = dataline.replace("Datais","")
+        # dataline_json = json.loads(dataline)
+
+        return dataline
     except Exception:
         print("Failed to parse JSON")
         return
