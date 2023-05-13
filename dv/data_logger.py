@@ -7,9 +7,9 @@ import pandas as pd
 
 
 def main():
-    file = open("data/walking_fast_3.txt", 'w+')
+    file = open("data/jogging_3(Strip_first_5s).txt", 'w+')
     start = time.time()
-    while time.time() - start < 30:
+    while time.time() - start < 35:
         # print(time.process_time())
         data_line = serial_readline()
         if data_line is not None and len(data_line) > 5:
