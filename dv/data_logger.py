@@ -7,14 +7,15 @@ import pandas as pd
 
 
 def main():
-    file = open("data/jogging_3(Strip_first_5s).txt", 'w+')
+    file = open("data/sprint_3_stripped.txt", 'w+')
     start = time.time()
     while time.time() - start < 35:
-        # print(time.process_time())
+        count = time.time() - start
+        print(count)
         data_line = serial_readline()
         if data_line is not None and len(data_line) > 5:
             # print(data_line)
-            file.write(f"{data_line}\n")
+            file.write(f"{data_line,count}\n")
     file.close()
 
 
