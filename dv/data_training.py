@@ -6,23 +6,6 @@ import glob
 from sklearn.neighbors import KNeighborsRegressor
 
 
-# def main():
-#     regressor = load_and_train_regressor(6000)
-#     test_input = np.array([[-55, -54, -63, -64, -66, -66, -57, -65],
-#                            [-58, -62, -60, -65, -57, -66, -62, -60],
-#                            [-58, -59, -60, -67, -57, -66, -62, -60],
-#                            [-58, -59, -60, -67, -57, -66, -62, -60],
-#                            [-58, -59, -60, -67, -57, -66, -62, -60],
-#                            [-57, -59, -60, -67, -57, -66, -76, -60],
-#                            [-57, -59, -60, -67, -60, -66, -76, -60],
-#                            [-57, -55, -60, -67, -60, -66, -76, -60],
-#                            [-57, -55, -63, -67, -60, -64, -76, -65],
-#                            [-75, -55, -62, -67, -68, -63, -76, -62],
-#                            [-75, -55, -62, -67, -68, -63, -76, -62],
-#                            [-75, -55, -62, -62, -59, -63, -62, -62, ]])
-#     test_and_plot(regressor, test_input)
-
-
 def load_and_train_regressor(neighbours):
     path = "./otherData"
     csv_files = glob.glob(os.path.join(path, "*.csv"))
