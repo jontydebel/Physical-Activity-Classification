@@ -3,35 +3,50 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import os
 import glob
-from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neighbors import KNeighborsClassifier
 
 
-def load_and_train_regressor(neighbours):
-    path = "./otherData"
-    csv_files = glob.glob(os.path.join(path, "*.csv"))
-
-    data = []
-    for file in csv_files:
-        temp = pd.read_csv(file, index_col=None)
-        data.append(temp)
-
-    data = pd.concat(data, ignore_index=True, axis=0)
-    data = data.drop_duplicates()
+def main():
+    data = pd.read_csv("_PROCESSED.csv")
     data = np.array(data)
 
-    regressor = KNeighborsRegressor(n_neighbors=neighbours)
+    rows, cols = np.shape(data)
+    index = np.random.choice(rows, round(rows * 0.8), replace=False)
+    training_batch = data[index, :]
+    test_batch = np.delete(data, index, 0)
+    test_input = test_batch[:, 0:4]
+    true_output = test_batch[:, 4]
+    model = train_KNN_classifier(200, training_batch)
+
+    test_rows, test_cols = np.shape(test_batch)
+
+    correct = 0
+    for i in range(1000):
+        row_idx = np.random.randint(low=0, high=test_rows)
+        result = predict_movement(model, test_input[row_idx, :])
+        if result[0] == true_output[row_idx]:
+            correct += 1
+        else:
+            print(f"INCORRECT - Predicted: {result[0]}, Actual: {true_output[row_idx]}")
+    print(f"{correct} out of 1000 correct")
+
+
+
+def train_KNN_classifier(neighbours, training_data):
+    classifier = KNeighborsClassifier(n_neighbors=neighbours)
 
     # split data into X,y where X is features and y is result
-    y = data[:, 8:10]
-    X = data[:, 0:8]
+    X = training_data[:, 0:4]
+    y = training_data[:, 4]
 
-    regressor.fit(X, y)
-    return regressor
+    classifier.fit(X, y)
+    return classifier
 
 
-def predict_pos(regressor, input):
-    input_array = np.array(input, dtype=float).reshape(1, -1)
-    output = regressor.predict(input_array)
-    return tuple(output[0])
+def predict_movement(classifier, input):
+    input_array = np.array(input, dtype=float).reshape((1, -1))
+    output = classifier.predict(input_array)
+    return output
 
-# main()
+
+main()
