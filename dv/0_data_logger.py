@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def main():
-    file = open("data/sprint_3_stripped.txt", 'w+')
+    file = open("data/running_1.txt", 'w+')
     start = time.time()
     while time.time() - start < 35:
         count = time.time() - start

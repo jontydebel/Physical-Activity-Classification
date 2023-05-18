@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 # import matplotlib.pyplot as plt
 import os
 import glob
@@ -16,7 +17,9 @@ def main():
     test_batch = np.delete(data, index, 0)
     test_input = test_batch[:, 0:4]
     true_output = test_batch[:, 4]
-    model = train_KNN_classifier(200, training_batch)
+    # model = train_KNN_classifier(200, training_batch)
+    # pickle.dump(model, open("Model_KNN.obj", "wb"))
+    model = pickle.load(open("Model_KNN.obj", "rb"))
 
     test_rows, test_cols = np.shape(test_batch)
 
@@ -29,7 +32,6 @@ def main():
         else:
             print(f"INCORRECT - Predicted: {result[0]}, Actual: {true_output[row_idx]}")
     print(f"{correct} out of 1000 correct")
-
 
 
 def train_KNN_classifier(neighbours, training_data):
@@ -48,5 +50,3 @@ def predict_movement(classifier, input):
     output = classifier.predict(input_array)
     return output
 
-
-main()

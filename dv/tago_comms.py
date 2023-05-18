@@ -6,6 +6,8 @@ import serial
 import serial.tools.list_ports as st
 from strip_ansi import strip_ansi
 import json
+import pickle
+import numpy as np
 
 max_pos = 4
 min_pos = 0
@@ -15,23 +17,31 @@ ser = 0
 def main():
 
     # ser = init_serial()
-    model = data_training.load_and_train_regressor(50)
+    file = open("Model_KNN.obj", "rb")
+    model = pickle.load(file)
+    file.close()
 
+    accel_gyro_data = []
     while True:
         data_line = serial_readline()
-        rssi_data = []
+        accel_gyro_row = []
+        headings = ["accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"]
         try:
-            for i in range(1, 9):
-                key = f"node{i}"
-                rssi_data.append(data_line[key])
+            for key in headings:
+                accel_gyro_row.append(data_line[key])
+            accel_gyro_data.append(accel_gyro_row)
+            if len(accel_gyro_data) > 60:
+                accel_gyro_data = accel_gyro_data[-60:]
         except Exception:
             print("passed")
             continue
 
-        position = data_training.predict_pos(model, rssi_data)
+        transformed_data = transform_data(accel_gyro_data)
 
-        worker_thread = threading.Thread(target=send_to_dashboard, args=(data_line, position))
-        worker_thread.start()
+        movement_class = data_training.predict_movement(model, transformed_data)
+
+        # worker_thread = threading.Thread(target=send_to_dashboard, args=(data_line, position))
+        # worker_thread.start()
         time.sleep(9.2)
         print(threading.active_count())
 
@@ -57,6 +67,22 @@ def init_serial():
     except Exception:
         time.sleep(1)
         init_serial()
+
+
+def transform_data(accel_gyro_raw):
+    raw_data = np.array(accel_gyro_raw, dtype=float)
+
+    # Vectorization
+    accel_magnitude = np.sqrt(raw_data[:, 0] ** 2 + raw_data[:, 1] ** 2 + raw_data[:, 2] ** 2)
+    gyro_magnitude = np.sqrt(raw_data[:, 3] ** 2 + raw_data[:, 4] ** 2 + raw_data[:, 5] ** 2)
+
+    # Aggregation
+    accel_mean = accel_magnitude.mean()
+    accel_stddev = accel_magnitude.std()
+    gyro_mean = gyro_magnitude.mean()
+    gyro_stddev = gyro_magnitude.std()
+
+    return [accel_mean, gyro_mean, accel_stddev, gyro_stddev]
 
 
 def serial_readline():
