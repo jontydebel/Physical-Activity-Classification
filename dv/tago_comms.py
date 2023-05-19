@@ -20,7 +20,7 @@ def main():
     file = open("Model_KNN.obj", "rb")
     model = pickle.load(file)
     file.close()
-
+    i = 0
     accel_gyro_data = []
     while True:
         data_line = serial_readline()
@@ -31,28 +31,27 @@ def main():
                 data_line = [float(n) for n in data_line]
                 print(data_line)
         # print(data_line[0])
-        
-        # accel_gyro_row = []
-        # headings = ["accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"]
-        # try:
-        #     for key in headings:
-        #         accel_gyro_row.append(data_line[key])
-        #     accel_gyro_data.append(accel_gyro_row)
-        #     if len(accel_gyro_data) > 60:
-        #         accel_gyro_data = accel_gyro_data[-60:]
-        # except Exception:
-        #     print("passed")
-        #     continue
-        
 
-        transformed_data = transform_data(data_line[0:2], )
+        accel_gyro_row = []
+        # headings = ["accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"]
+        try:
+            for i in range(6):
+                accel_gyro_row.append(data_line[i])
+            accel_gyro_data.append(accel_gyro_row)
+            if len(accel_gyro_data) > 60:
+                accel_gyro_data = accel_gyro_data[-60:]
+        except Exception:
+            print("passed array build")
+            continue
+
+        transformed_data = transform_data(accel_gyro_data)
 
         movement_class = data_training.predict_movement(model, transformed_data)
-
+        print(movement_class)
         # worker_thread = threading.Thread(target=send_to_dashboard, args=(data_line, position))
         # worker_thread.start()
-        time.sleep(9.2)
-        print(threading.active_count())
+        time.sleep(0.1)
+        # print(threading.active_count())
 
 
 def init_serial():
@@ -70,8 +69,8 @@ def init_serial():
                 break
 
         # name = "/dev/" + name
-        ser = serial.Serial('/dev/tty.usbmodem142101', 115200)
-        # ser = serial.Serial(name, 115200)
+        # ser = serial.Serial('/dev/tty.usbmodem142101', 115200)
+        ser = serial.Serial(name, 115200)
         return ser
 
     except Exception:
@@ -81,18 +80,20 @@ def init_serial():
 
 
 def transform_data(accel_gyro_raw):
-    raw_data = np.array(accel_gyro_raw, dtype=float)
+    accel_gyro = np.array(accel_gyro_raw, dtype=float)
+
 
     # Vectorization
-    accel_magnitude = np.sqrt(raw_data[:, 0] ** 2 + raw_data[:, 1] ** 2 + raw_data[:, 2] ** 2)
-    gyro_magnitude = np.sqrt(raw_data[:, 3] ** 2 + raw_data[:, 4] ** 2 + raw_data[:, 5] ** 2)
+    accel_magnitude = np.sqrt(accel_gyro[:, 0] ** 2 + accel_gyro[:, 1] ** 2 + accel_gyro[:, 2] ** 2)
+    gyro_magnitude = np.sqrt(accel_gyro[:, 3] ** 2 + accel_gyro[:, 4] ** 2 + accel_gyro[:, 5] ** 2)
+    print(accel_magnitude)
 
     # Aggregation
     accel_mean = accel_magnitude.mean()
     accel_stddev = accel_magnitude.std()
     gyro_mean = gyro_magnitude.mean()
     gyro_stddev = gyro_magnitude.std()
-
+    print([accel_mean, gyro_mean, accel_stddev, gyro_stddev])
     return [accel_mean, gyro_mean, accel_stddev, gyro_stddev]
 
 
