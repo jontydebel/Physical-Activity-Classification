@@ -109,7 +109,7 @@ void ahu_sensor_thread(void)
       	//Convert duration to uS
      	durationTime = k_cyc_to_us_near32(durationTime);
 		//Check if more than 200ms have passed (in uS)
-		if (durationTime > 100000) {
+		if (durationTime > 20000) {
             // printk("Processing now.\n");
             int rc = process_mpu6050(mpu6050, &accel_x, &accel_y, 
                                         &accel_z, &gyro_x, &gyro_y, &gyro_z);

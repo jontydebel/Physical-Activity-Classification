@@ -4,7 +4,7 @@ import threading
 import data_training
 import serial
 import serial.tools.list_ports as st
-from strip_ansi import strip_ansi
+from strip_ansi import strip_ansi 
 import json
 import pickle
 import numpy as np
@@ -24,19 +24,28 @@ def main():
     accel_gyro_data = []
     while True:
         data_line = serial_readline()
-        accel_gyro_row = []
-        headings = ["accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"]
-        try:
-            for key in headings:
-                accel_gyro_row.append(data_line[key])
-            accel_gyro_data.append(accel_gyro_row)
-            if len(accel_gyro_data) > 60:
-                accel_gyro_data = accel_gyro_data[-60:]
-        except Exception:
-            print("passed")
-            continue
+        # print(data_line)
+        if data_line:
+            if ':' in data_line:
+                data_line = data_line.split(":")
+                data_line = [float(n) for n in data_line]
+                print(data_line)
+        # print(data_line[0])
+        
+        # accel_gyro_row = []
+        # headings = ["accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"]
+        # try:
+        #     for key in headings:
+        #         accel_gyro_row.append(data_line[key])
+        #     accel_gyro_data.append(accel_gyro_row)
+        #     if len(accel_gyro_data) > 60:
+        #         accel_gyro_data = accel_gyro_data[-60:]
+        # except Exception:
+        #     print("passed")
+        #     continue
+        
 
-        transformed_data = transform_data(accel_gyro_data)
+        transformed_data = transform_data(data_line[0:2], )
 
         movement_class = data_training.predict_movement(model, transformed_data)
 
@@ -61,10 +70,12 @@ def init_serial():
                 break
 
         # name = "/dev/" + name
-        ser = serial.Serial(name, 115200)
+        ser = serial.Serial('/dev/tty.usbmodem142101', 115200)
+        # ser = serial.Serial(name, 115200)
         return ser
 
     except Exception:
+        print("Failed serial")
         time.sleep(1)
         init_serial()
 
@@ -94,13 +105,23 @@ def serial_readline():
         print("Reconnecting...")
         ser = init_serial()
     try:
+        # print(dataline)
+        # dataline = strip_ansi(dataline)
+        # dataline = dataline.replace("CSSE4011:~$", "")
+        # print(dataline)
+        # dataline = dataline[dataline.find("{"):]
+        # print(dataline)
+        # dataline_json = json.loads(dataline)
+        
         dataline = strip_ansi(dataline)
         dataline = dataline.replace("CSSE4011:~$", "")
-        dataline = dataline[dataline.find("{"):]
+
+        dataline = dataline[dataline.find("Datais"):]
+        dataline = dataline.replace("Datais","")
         print(dataline)
-        dataline_json = json.loads(dataline)
-        return dataline_json
-    except Exception:
+        return dataline
+    except Exception as e:
+        print(e)
         print("Failed to parse JSON")
         return
 
