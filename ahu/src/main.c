@@ -175,5 +175,5 @@ void ahu_sensor_thread(void)
 
 //Define both threads needed for Prac 3 - Main BT Thread and Node Thread
 // K_THREAD_DEFINE(ahu_node_thread_tid, AHU_BT_THREAD_STACK, ahu_node_thread, NULL, NULL, NULL, AHU_NODE_THREAD_PRIORITY, 0, 500);
-K_THREAD_DEFINE(ahu_sensor_thread_tid, AHU_SENSOR_THREAD_STACK, ahu_sensor_thread, NULL, NULL, NULL, AHU_SENSOR_THREAD_PRIORITY, 0, 10000);
+K_THREAD_DEFINE(ahu_sensor_thread_tid, AHU_SENSOR_THREAD_STACK, ahu_sensor_thread, NULL, NULL, NULL, AHU_SENSOR_THREAD_PRIORITY, 0, 1000);
 K_THREAD_DEFINE(ahu_bt_thread_tid, AHU_BT_THREAD_STACK, ahu_bt_thread, NULL, NULL, NULL, AHU_BT_THREAD_PRIORITY, 0, 0);
